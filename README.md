@@ -1,5 +1,7 @@
 # Rally 2 Recomp
 
+**English** | [Italiano](README.it.md)
+
 Native Android port of the 1998 Model 3 arcade rally game (MAME set `srally2`).
 
 No emulator: the original PowerPC game code is translated **on your device** into native ARM code (arm64 or 32-bit ARM), and the arcade hardware (graphics, sound, inputs) is reimplemented natively. The result runs at full speed on ordinary phones and Android TV boxes.
