@@ -1,0 +1,181 @@
+diff --git a/Src/CPU/PowerPC/ppc.cpp b/Src/CPU/PowerPC/ppc.cpp
+index 1343e69..577a167 100644
+--- a/Src/CPU/PowerPC/ppc.cpp
++++ b/Src/CPU/PowerPC/ppc.cpp
+@@ -317,44 +317,46 @@ static void ppc_change_pc(UINT32 newpc)
+ 	ppc.fatalError = true;
+ }
+ 
++static inline void tr_mem(int kind, int size, UINT32 addr, UINT64 val);	// trace hook (defined in ppc603.c)
++
+ static inline UINT8 READ8(UINT32 address)
+ {
+-	return Bus->Read8(address);
++	UINT8 v = Bus->Read8(address); tr_mem(0, 1, address, v); return v;
+ }
+ 
+ static inline UINT16 READ16(UINT32 address)
+ {
+-	return Bus->Read16(address);
++	UINT16 v = Bus->Read16(address); tr_mem(0, 2, address, v); return v;
+ }
+ 
+ static inline UINT32 READ32(UINT32 address)
+ {
+-	return Bus->Read32(address);
++	UINT32 v = Bus->Read32(address); tr_mem(0, 4, address, v); return v;
+ }
+ 
+ static inline UINT64 READ64(UINT32 address)
+ {
+-	return Bus->Read64(address);
++	UINT64 v = Bus->Read64(address); tr_mem(0, 8, address, v); return v;
+ }
+ 
+ static inline void WRITE8(UINT32 address, UINT8 data)
+ {
+-	Bus->Write8(address,data);
++	tr_mem(1, 1, address, data); Bus->Write8(address,data);
+ }
+ 
+ static inline void WRITE16(UINT32 address, UINT16 data)
+ {
+-	Bus->Write16(address,data);
++	tr_mem(1, 2, address, data); Bus->Write16(address,data);
+ }
+ 
+ static inline void WRITE32(UINT32 address, UINT32 data)
+ {
+-	Bus->Write32(address,data);
++	tr_mem(1, 4, address, data); Bus->Write32(address,data);
+ }
+ 
+ static inline void WRITE64(UINT32 address, UINT64 data)
+ {
+-	Bus->Write64(address,data);
++	tr_mem(1, 8, address, data); Bus->Write64(address,data);
+ }
+ 
+ 
+diff --git a/Src/CPU/PowerPC/ppc603.c b/Src/CPU/PowerPC/ppc603.c
+index 9cbc87e..cbb9958 100644
+--- a/Src/CPU/PowerPC/ppc603.c
++++ b/Src/CPU/PowerPC/ppc603.c
+@@ -249,8 +249,101 @@ void ppc_reset(void)
+ 	ppc.icount = 0;
+ }
+ 
++
++/* ---- coverage hook (SM_COV=outprefix) ---- */
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++static int cov_on = -1;
++static const char *cov_prefix;
++static UINT8 *cov_ram, *cov_rom;           /* bitmaps, 1 bit per 4-byte word */
++typedef struct { UINT32 from, to; } cov_edge;
++static cov_edge *cov_tab; static UINT32 cov_cap = 1<<22, cov_n;
++static void cov_dump(void)
++{
++	char fn[512]; FILE *f;
++	snprintf(fn,sizeof fn,"%s.pc.txt",cov_prefix); f=fopen(fn,"w");
++	for (UINT32 i=0;i<0x800000/4;i++) if (cov_ram[i>>3]&(1<<(i&7))) fprintf(f,"%08X R\n",i*4);
++	for (UINT32 i=0;i<0x1000000/4;i++) if (cov_rom[i>>3]&(1<<(i&7))) fprintf(f,"%08X C\n",0xFF000000u+i*4);
++	fclose(f);
++	snprintf(fn,sizeof fn,"%s.edges.txt",cov_prefix); f=fopen(fn,"w");
++	for (UINT32 i=0;i<cov_cap;i++) if (cov_tab[i].from|cov_tab[i].to) fprintf(f,"%08X %08X\n",cov_tab[i].from,cov_tab[i].to);
++	fclose(f);
++}
++
++static unsigned long long cov_ins, cov_next = ~0ULL; static unsigned cov_ms[64], cov_msn, cov_msi;
++static void cov_milestone(void)
++{
++	char fn[512]; FILE *f; UINT32 a;
++	cov_dump();
++	snprintf(fn,sizeof fn,"%s.ram_%uM.bin",cov_prefix,cov_ms[cov_msi]); f=fopen(fn,"wb");
++	for (a=0;a<0x800000;a+=4) { UINT32 w=Bus->Read32(a); fputc(w>>24,f); fputc(w>>16,f); fputc(w>>8,f); fputc(w,f); }
++	fclose(f);
++	cov_msi++;
++	cov_next = cov_msi<cov_msn ? (unsigned long long)cov_ms[cov_msi]*1000000ULL : ~0ULL;
++}
++static void cov_init(void)
++{
++	cov_prefix = getenv("SM_COV");
++	cov_on = cov_prefix ? 1 : 0;
++	if (!cov_on) return;
++	cov_ram = (UINT8*)calloc(0x800000/32,1); cov_rom = (UINT8*)calloc(0x1000000/32,1);
++	cov_tab = (cov_edge*)calloc(cov_cap,sizeof(cov_edge));
++	atexit(cov_dump);
++	{ const char *e=getenv("SM_DUMP"); while (e && *e && cov_msn<64) { cov_ms[cov_msn++]=strtoul(e,(char**)&e,10); if (*e==',') e++; } if (cov_msn) cov_next=(unsigned long long)cov_ms[0]*1000000ULL; }
++}
++static inline void cov_pc(UINT32 pc, UINT32 npc)
++{
++	if (pc < 0x800000) cov_ram[(pc>>2)>>3] |= 1<<((pc>>2)&7);
++	else if (pc >= 0xFF000000u) { UINT32 w=(pc-0xFF000000u)>>2; cov_rom[w>>3] |= 1<<(w&7); }
++	if (npc != pc+4) { /* branch taken / exception: record edge */
++		UINT32 h = (pc*2654435761u ^ npc*40503u) & (cov_cap-1);
++		while (cov_tab[h].from|cov_tab[h].to) { if (cov_tab[h].from==pc && cov_tab[h].to==npc) return; h=(h+1)&(cov_cap-1); }
++		if (cov_n < cov_cap*3/4) { cov_tab[h].from=pc; cov_tab[h].to=npc; cov_n++; }
++	}
++}
++
++/* ---- register trace (SM_TRACE=file [SM_TRACE_SKIP=n] [SM_TRACE_N=n]) ---- */
++static FILE *tr_f, *tr_mf; static int tr_active, tr_pend; static unsigned tr_nev; static struct { unsigned char k, sz; UINT32 a; UINT64 v; } tr_ev[256];
++static FILE *tr_f_unused; static unsigned long long tr_skip, tr_n = 200000, tr_cnt, tr_period; static int tr_on = -1;
++static void tr_init(void)
++{
++	const char *p = getenv("SM_TRACE"); const char *e;
++	tr_on = 0; if (!p) return;
++	if ((e=getenv("SM_TRACE_SKIP"))) tr_skip = strtoull(e,0,10);
++	if ((e=getenv("SM_TRACE_N"))) tr_n = strtoull(e,0,10);
++	if ((e=getenv("SM_TRACE_PERIOD"))) tr_period = strtoull(e,0,10); /* repeat a window of N records every PERIOD instructions */
++	tr_f = fopen(p,"wb"); tr_on = tr_f != NULL;
++	{ char fn[600]; snprintf(fn,sizeof fn,"%s.mem",p); tr_mf = fopen(fn,"wb"); }
++}
++static inline void tr_mem(int kind, int size, UINT32 addr, UINT64 val)
++{
++	if (tr_active && tr_nev < 256) { tr_ev[tr_nev].k = kind; tr_ev[tr_nev].sz = size; tr_ev[tr_nev].a = addr; tr_ev[tr_nev].v = val; tr_nev++; }
++}
++static void tr_flush_ev(void)
++{	/* entry for the previously recorded instruction: u8 n, then n x { u8 kind, u8 size, u32 addr, u64 value } (packed little-endian) */
++	unsigned char n = (unsigned char)tr_nev; fwrite(&n,1,1,tr_mf);
++	for (unsigned i = 0; i < tr_nev; i++) { fwrite(&tr_ev[i].k,1,1,tr_mf); fwrite(&tr_ev[i].sz,1,1,tr_mf); fwrite(&tr_ev[i].a,4,1,tr_mf); fwrite(&tr_ev[i].v,8,1,tr_mf); }
++	tr_nev = 0; tr_pend = 0;
++}
++static inline void tr_rec(void)
++{
++	if (tr_pend) tr_flush_ev();
++	tr_active = 0;	/* record: pc, r0-31, lr, ctr, xer, msr, cr[8], fpr0-31 (raw 8B each) = 412 bytes, host-endian */
++	if (tr_cnt++ < tr_skip) return;
++	if (tr_period) { if (((tr_cnt - 1 - tr_skip) % tr_period) >= tr_n) return; }
++	else if (tr_cnt > tr_skip + tr_n) { fclose(tr_f); fclose(tr_mf); tr_f = NULL; tr_on = 0; return; }
++	tr_active = 1; tr_pend = 1; tr_nev = 0;
++	UINT32 h[4+32]; h[0]=ppc.pc; memcpy(h+1,ppc.r,128); h[33]=ppc.lr; h[34]=ppc.ctr; h[35]=ppc.xer;
++	fwrite(h,4,1,tr_f); fwrite(ppc.r,4,32,tr_f); fwrite(&h[33],4,3,tr_f);
++	{ UINT32 m = ppc.msr; fwrite(&m,4,1,tr_f); } fwrite(ppc.cr,1,8,tr_f);
++	for (int i=0;i<32;i++) fwrite(&ppc.fpr[i],8,1,tr_f);
++}
++
+ int ppc_execute(int cycles)
+ {
++	if (cov_on < 0) cov_init();
++	if (tr_on < 0) tr_init();
+ 	UINT32 opcode;
+ 
+ 	ppc.cur_cycles = cycles;
+@@ -297,6 +390,7 @@ int ppc_execute(int cycles)
+ 			
+ 		opcode = *ppc.op++;	// Supermodel byte reverses each aligned word (converting them to little endian) so they can be fetched directly
+ 		ppc.npc = ppc.pc + 4;
++		if (tr_on) tr_rec();
+ 
+ #ifdef SUPERMODEL_DEBUGGER
+ 		if (PPCDebug != NULL)
+@@ -315,6 +409,7 @@ int ppc_execute(int cycles)
+ 			default:	optable[opcode >> 26](opcode); break;
+ 		}
+ 
++		if (cov_on) { cov_pc(ppc.pc, ppc.npc); if (++cov_ins == cov_next) cov_milestone(); }
+ 		ppc.icount--;
+ 		
+ 		if (ppc.icount == ppc.dec_trigger_cycle)

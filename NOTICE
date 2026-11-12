@@ -1,0 +1,8 @@
+srally2-recomp is licensed under the GNU GPL v3 (see LICENSE).
+
+Third-party components (none bundled; fetched when you run the scripts):
+  * Ghidra (Apache-2.0) - https://github.com/NationalSecurityAgency/ghidra - downloaded by scripts/setup.sh for headless analysis.
+  * Supermodel (GPLv3) - https://github.com/trzy/Supermodel - maintainers only, dev/build_oracle.sh: used as a test oracle.
+    dev/supermodel/trace-coverage.patch modifies Supermodel and is therefore GPLv3.
+
+No game ROM, ROM dump, or code lifted from a ROM is included. You must supply your own copy of the srally2 ROM set.

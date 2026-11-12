@@ -1,0 +1,10 @@
+/app/jni/SDL2/
+/.gradle/
+/build/
+/app/build/
+/app/.cxx/
+local.properties
+*.apk
+/icon.png
+/app/src/main/res/mipmap-*/
+/app/src/main/res/values/ic_launcher_background.xml

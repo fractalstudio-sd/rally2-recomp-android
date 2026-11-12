@@ -1,0 +1,275 @@
+{
+ "game": "srally2",
+ "title": "Sega Rally 2",
+ "regions": [
+  {
+   "name": "crom",
+   "stride": 8,
+   "chunk_size": 2,
+   "byte_swap": true,
+   "files": [
+    {
+     "name": "epr-20635.20",
+     "offset": 0,
+     "crc32": 2033665855
+    },
+    {
+     "name": "epr-20634.19",
+     "offset": 2,
+     "crc32": 1168151109
+    },
+    {
+     "name": "epr-20633.18",
+     "offset": 4,
+     "crc32": 4121055012
+    },
+    {
+     "name": "epr-20632.17",
+     "offset": 6,
+     "crc32": 1747560449
+    }
+   ]
+  },
+  {
+   "name": "banked_crom",
+   "stride": 8,
+   "chunk_size": 2,
+   "byte_swap": true,
+   "files": [
+    {
+     "name": "mpr-20605.4",
+     "offset": 0,
+     "crc32": 5321729
+    },
+    {
+     "name": "mpr-20604.3",
+     "offset": 2,
+     "crc32": 2579886998
+    },
+    {
+     "name": "mpr-20603.2",
+     "offset": 4,
+     "crc32": 2903346872
+    },
+    {
+     "name": "mpr-20602.1",
+     "offset": 6,
+     "crc32": 1624221482
+    },
+    {
+     "name": "mpr-20609.8",
+     "offset": 16777216,
+     "crc32": 3225207013
+    },
+    {
+     "name": "mpr-20608.7",
+     "offset": 16777218,
+     "crc32": 211486065
+    },
+    {
+     "name": "mpr-20607.6",
+     "offset": 16777220,
+     "crc32": 1839749795
+    },
+    {
+     "name": "mpr-20606.5",
+     "offset": 16777222,
+     "crc32": 119838973
+    },
+    {
+     "name": "mpr-20613.12",
+     "offset": 33554432,
+     "crc32": 691585241
+    },
+    {
+     "name": "mpr-20612.11",
+     "offset": 33554434,
+     "crc32": 1914324150
+    },
+    {
+     "name": "mpr-20611.10",
+     "offset": 33554436,
+     "crc32": 1570737058
+    },
+    {
+     "name": "mpr-20610.9",
+     "offset": 33554438,
+     "crc32": 3068198734
+    }
+   ]
+  },
+  {
+   "name": "vrom",
+   "stride": 32,
+   "chunk_size": 2,
+   "byte_swap": false,
+   "files": [
+    {
+     "name": "mpr-20616.26",
+     "offset": 0,
+     "crc32": 3776827275
+    },
+    {
+     "name": "mpr-20617.27",
+     "offset": 2,
+     "crc32": 2527915839
+    },
+    {
+     "name": "mpr-20618.28",
+     "offset": 4,
+     "crc32": 1814565505
+    },
+    {
+     "name": "mpr-20619.29",
+     "offset": 6,
+     "crc32": 262559769
+    },
+    {
+     "name": "mpr-20620.30",
+     "offset": 8,
+     "crc32": 4000929887
+    },
+    {
+     "name": "mpr-20621.31",
+     "offset": 10,
+     "crc32": 983110799
+    },
+    {
+     "name": "mpr-20622.32",
+     "offset": 12,
+     "crc32": 102297686
+    },
+    {
+     "name": "mpr-20623.33",
+     "offset": 14,
+     "crc32": 3438484357
+    },
+    {
+     "name": "mpr-20624.34",
+     "offset": 16,
+     "crc32": 2431846710
+    },
+    {
+     "name": "mpr-20625.35",
+     "offset": 18,
+     "crc32": 83363066
+    },
+    {
+     "name": "mpr-20626.36",
+     "offset": 20,
+     "crc32": 762091478
+    },
+    {
+     "name": "mpr-20627.37",
+     "offset": 22,
+     "crc32": 2706303089
+    },
+    {
+     "name": "mpr-20628.38",
+     "offset": 24,
+     "crc32": 3148360099
+    },
+    {
+     "name": "mpr-20629.39",
+     "offset": 26,
+     "crc32": 3939691313
+    },
+    {
+     "name": "mpr-20630.40",
+     "offset": 28,
+     "crc32": 3428352440
+    },
+    {
+     "name": "mpr-20631.41",
+     "offset": 30,
+     "crc32": 1555472381
+    }
+   ]
+  },
+  {
+   "name": "sound_program",
+   "stride": 1,
+   "chunk_size": 1,
+   "byte_swap": true,
+   "files": [
+    {
+     "name": "epr-20636.21",
+     "offset": 0,
+     "crc32": 1899621368
+    }
+   ]
+  },
+  {
+   "name": "sound_samples",
+   "stride": 1,
+   "chunk_size": 1,
+   "byte_swap": true,
+   "files": [
+    {
+     "name": "mpr-20614.22",
+     "offset": 0,
+     "crc32": 2744323658
+    },
+    {
+     "name": "mpr-20615.24",
+     "offset": 4194304,
+     "crc32": 1659414858
+    }
+   ]
+  },
+  {
+   "name": "mpeg_program",
+   "stride": 1,
+   "chunk_size": 1,
+   "byte_swap": true,
+   "files": [
+    {
+     "name": "epr-20641.2",
+     "offset": 0,
+     "crc32": 3384287285
+    }
+   ]
+  },
+  {
+   "name": "mpeg_music",
+   "stride": 1,
+   "chunk_size": 1,
+   "byte_swap": false,
+   "files": [
+    {
+     "name": "mpr-20637.57",
+     "offset": 0,
+     "crc32": 3597568514
+    },
+    {
+     "name": "mpr-20638.58",
+     "offset": 4194304,
+     "crc32": 3511759746
+    },
+    {
+     "name": "mpr-20639.59",
+     "offset": 8388608,
+     "crc32": 4133501819
+    },
+    {
+     "name": "mpr-20640.60",
+     "offset": 12582912,
+     "crc32": 2666137527
+    }
+   ]
+  },
+  {
+   "name": "driveboard_program",
+   "stride": 1,
+   "chunk_size": 1,
+   "byte_swap": false,
+   "files": [
+    {
+     "name": "epr-20512.bin",
+     "offset": 0,
+     "crc32": 3479450893
+    }
+   ]
+  }
+ ]
+}

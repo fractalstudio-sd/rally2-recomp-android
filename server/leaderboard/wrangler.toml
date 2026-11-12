@@ -1,0 +1,14 @@
+name = "rally-leaderboard"
+main = "src/worker.js"
+compatibility_date = "2024-09-23"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rally-leaderboard"
+database_id = "REPLACE_WITH_THE_ID_PRINTED_BY_wrangler_d1_create"
+
+[vars]
+# plausibility limits, in game time units (1/6000 s)
+MIN_COURSE_TIME = "180000"         # 30 s
+MIN_CHAMPIONSHIP_TIME = "1440000"  # 4 min
+MAX_PER_HOUR = "60"                # results accepted per player per hour

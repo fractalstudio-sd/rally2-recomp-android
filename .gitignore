@@ -1,0 +1,35 @@
+# Everything derived from a ROM stays local. Never commit any of this.
+build/
+out/
+cov/
+roms/
+*.zip
+*.7z
+*.bin
+*.mem
+*.o
+*.so
+verify/verify
+lifted_step.c
+recomp_*.c
+recomp.h
+functions.json
+*.edges.txt
+*.pc.txt
+__pycache__/
+
+!data/*.json
+
+# local asset dumps / packs (ROM-derived, never commit)
+/assets/
+/pack/
+
+# release artifacts and signing keys
+*.apk
+*.aab
+*.jks
+*.keystore
+*.p12
+*.pem
+*.der
+local.properties

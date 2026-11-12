@@ -1,0 +1,34 @@
+plugins { id 'com.android.application' }
+
+def repoRoot  = file('../..').absolutePath
+def genDir    = (findProperty('m3.generated') ?: "${repoRoot}/build/out").toString()
+def musashi   = (findProperty('m3.musashi')   ?: "${repoRoot}/build/android/musashi").toString()
+
+android {
+    namespace 'org.srally2'
+    compileSdk 34
+    ndkVersion '26.1.10909125'
+    defaultConfig {
+        applicationId 'org.srally2'
+        minSdk 26            // OpenGL ES 3.2 hardware + AAudio
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+        ndk { abiFilters 'arm64-v8a' }
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_shared", "-DCMAKE_BUILD_TYPE=Release",
+                          "-DM3_GENERATED_DIR=${genDir}", "-DM3_MUSASHI_PREGEN=${musashi}",
+                          "-DM3_REPO_ROOT=${repoRoot}"
+            }
+        }
+    }
+    externalNativeBuild { cmake { path 'jni/CMakeLists.txt'; version '3.22.1' } }
+    buildTypes {
+        // "debug" would compile the (huge) lifted game code unoptimised and run far too slowly: ship the optimised
+        // build, signed with the debug key so it installs directly.
+        release { minifyEnabled false; signingConfig signingConfigs.debug; ndk { debugSymbolLevel 'NONE' } }
+    }
+    packagingOptions { jniLibs { useLegacyPackaging = true } }
+    lint { abortOnError false }
+}
